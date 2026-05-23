@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encaminha fácil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:         #f2f5f2;
+    --surface:    #ffffff;
+    --surface2:   #f7faf7;
+    --border:     #d6e2d6;
+    --border2:    #b8ccb8;
+    --accent:     #2e7d4f;
+    --accent-lo:  #eaf4ee;
+    --accent-hi:  #3a9960;
+    --text:       #191e19;
+    --text-dim:   #526052;
+    --text-faint: #8fa48f;
+    --green:      #2e7d4f;
+    --red:        #b04040;
+    --sans:       'Google Sans', sans-serif;
+    --radius:     10px;
+    --shadow:     0 1px 4px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%; background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 14px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased; overflow: hidden;
+  }
+  .app { display: flex; flex-direction: column; height: 100vh; }
+
+  /* Header */
+  header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 13px 28px; background: var(--surface);
+    border-bottom: 1px solid var(--border); flex-shrink: 0;
+    animation: fadeDown .4s ease both;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; flex: 1; }
+  .logomark {
+    width: 30px; height: 30px; border-radius: 7px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--accent) 0%, #1f5c38 100%);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 8px rgba(46,125,79,.25);
+  }
+  .logomark svg { width: 16px; height: 16px; }
+  .brand-text h1 { font-size: 15px; font-weight: 500; color: var(--text); line-height: 1.2; }
+  .brand-text p  { font-size: 10px; color: var(--text-faint); letter-spacing: .04em; }
+  .badge {
+    font-size: 10px; padding: 3px 9px; border-radius: 20px;
+    border: 1px solid var(--border2); color: var(--text-faint);
+    background: var(--surface2); letter-spacing: .06em;
+  }
+
+  /* Workspace */
+  .workspace {
+    flex: 1; display: grid; grid-template-columns: 1fr 1fr;
+    align-items: stretch; gap: 18px; padding: 20px 28px;
+    overflow: hidden; animation: fadeUp .45s .08s ease both;
+  }
+
+  /* Left column: textarea + specialty stacked */
+  .left-col { display: flex; flex-direction: column; gap: 12px; min-height: 0; height: 100%; }
+
+  .pane { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+  .pane.grow { flex: 1; }
+
+  .pane-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2px; flex-shrink: 0; min-height: 28px;
+  }
+  .pane-label { font-size: 10px; letter-spacing: .1em; color: var(--text-faint); text-transform: uppercase; }
+  .pane-meta  { font-size: 10px; color: var(--text-faint); }
+  .pane-actions { display: flex; gap: 8px; align-items: center; }
+
+  .icon-btn {
+    width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+    border-radius: 8px; border: 1px solid rgba(46,125,79,.10);
+    background: rgba(255,255,255,.72); backdrop-filter: blur(8px);
+    cursor: pointer; transition: all .15s;
+  }
+  .icon-btn svg { width: 16px; height: 16px; }
+  .icon-btn:hover { border-color: rgba(46,125,79,.28); background: var(--accent-lo); color: var(--accent-hi); transform: translateY(-1px); }
+
+  textarea {
+    flex: 1; min-height: 0;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px;
+    font-family: var(--sans); font-size: 14px; line-height: 1.75;
+    color: var(--text); resize: none; outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    caret-color: var(--accent); box-shadow: var(--shadow); overflow-y: auto;
+  }
+  textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(46,125,79,.12), var(--shadow); }
+  textarea::placeholder { color: var(--text-faint); font-style: italic; }
+
+  /* Specialty input */
+  .specialty-row {
+    display: flex; gap: 0; align-items: stretch; flex-shrink: 0;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    overflow: hidden; transition: border-color .2s, box-shadow .2s;
+  }
+  .specialty-row:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(46,125,79,.12), var(--shadow);
+  }
+  .specialty-label {
+    padding: 0 14px; font-size: 10px; letter-spacing: .08em;
+    color: var(--text-faint); text-transform: uppercase;
+    background: var(--surface2); border-right: 1px solid var(--border);
+    display: flex; align-items: center; white-space: nowrap; flex-shrink: 0;
+  }
+  .specialty-input {
+    flex: 1; padding: 12px 14px; border: none; outline: none;
+    font-family: var(--sans); font-size: 14px; color: var(--text);
+    background: transparent; caret-color: var(--accent);
+  }
+  .specialty-input::placeholder { color: var(--text-faint); font-style: italic; }
+
+  /* Output */
+  .output-pane { display: flex; flex-direction: column; gap: 12px; min-height: 0; height: 100%; }
+
+  .output-wrap {
+    flex: 1; min-height: 0;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px;
+    font-family: var(--sans); font-size: 14px; line-height: 1.85;
+    color: var(--text); overflow-y: auto;
+    transition: border-color .2s, box-shadow .2s; box-shadow: var(--shadow);
+    outline: none; white-space: pre-wrap; word-break: break-word;
+  }
+  .output-wrap:focus { border-color: var(--border2); }
+  .output-wrap.streaming { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(46,125,79,.1), var(--shadow); }
+  .output-wrap[contenteditable="true"]:empty::before { content: attr(data-placeholder); color: var(--text-faint); font-style: italic; }
+
+  .placeholder-text { color: var(--text-faint); font-style: italic; font-size: 14px; }
+
+  .cursor {
+    display: inline-block; width: 2px; height: 14px;
+    background: var(--accent); margin-left: 2px;
+    vertical-align: middle; animation: blink .7s step-end infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* char counter */
+  .char-counter { font-size: 10px; color: var(--text-faint); }
+  .char-counter.warn { color: var(--red); }
+
+  /* Bottom bar */
+  .bottom-bar {
+    display: flex; align-items: center; justify-content: center;
+    gap: 12px; padding: 14px 28px; background: var(--surface);
+    border-top: 1px solid var(--border); flex-shrink: 0;
+  }
+
+  .status-pill {
+    position: fixed; left: 50%; bottom: 22px;
+    transform: translateX(-50%) translateY(10px);
+    opacity: 0; pointer-events: none;
+    font-size: 12px; padding: 9px 16px; border-radius: 999px;
+    border: 1px solid var(--border); transition: all .22s ease;
+    color: var(--text-faint); background: rgba(255,255,255,.92);
+    backdrop-filter: blur(12px); box-shadow: 0 6px 24px rgba(0,0,0,.12); z-index: 9999;
+  }
+  .status-pill.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .status-pill.ok   { color: var(--green); border-color: rgba(58,122,74,.25); background: #f0faf2; }
+  .status-pill.err  { color: var(--red);   border-color: rgba(176,64,64,.25); background: #fdf2f2; }
+  .status-pill.busy { color: var(--accent); border-color: rgba(201,106,42,.25); background: var(--accent-lo); }
+
+  .btn {
+    padding: 9px 24px; border-radius: 8px;
+    font-size: 13px; font-weight: 500; border: none; cursor: pointer;
+    transition: all .18s; display: flex; align-items: center; gap: 8px;
+  }
+  .btn-ghost { background: var(--surface); border: 1px solid var(--border2); color: var(--text-dim); box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-primary { background: linear-gradient(135deg, var(--accent) 0%, #1f5c38 100%); color: #fff; font-weight: 600; box-shadow: 0 2px 8px rgba(46,125,79,.3); }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(46,125,79,.4); filter: brightness(1.06); }
+  .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .spinner { width: 13px; height: 13px; border: 2px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%; animation: spin .65s linear infinite; display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeUp   { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  @media (max-width: 720px) {
+    html, body { overflow: auto; }
+    .app { height: auto; }
+    .workspace { grid-template-columns: 1fr; overflow: visible; padding: 16px; }
+    .left-col { height: auto; }
+    textarea { min-height: 260px; flex: none; height: 260px; }
+    .output-wrap { min-height: 200px; flex: none; height: 200px; }
+    header, .bottom-bar { padding: 12px 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="brand">
+      <div class="logomark">
+        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 6h12M4 10h8M7 14l5-4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>Encaminha fácil</h1>
+        <p>Resumindo o necessário</p>
+      </div>
+    </div>
+    <span class="badge">AOGAKID</span>
+  </header>
+
+  <div class="workspace">
+
+    <!-- Esquerda: só prontuário -->
+    <div class="left-col">
+      <div class="pane grow">
+        <div class="pane-header">
+          <span class="pane-label">Prontuário</span>
+          <div class="pane-actions">
+            <span class="pane-meta char-counter" id="charCount">0 caract</span>
+            <button class="icon-btn" onclick="clearInput()" title="Limpar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <textarea id="input" placeholder="Cole aqui o prontuário do paciente"></textarea>
+      </div>
+    </div>
+
+    <!-- Direita: especialidade + output -->
+    <div class="output-pane">
+
+      <div class="pane" style="flex-shrink:0">
+        <div class="pane-header">
+          <span class="pane-label">Especialidade</span>
+        </div>
+        <div class="specialty-row">
+          <span class="specialty-label">Encaminhar para</span>
+          <input class="specialty-input" id="specialty" type="text"
+            placeholder="ex.: cirurgia, oftalmologia, psicologia…"
+            onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='Enter') format()"/>
+        </div>
+      </div>
+
+      <div class="pane grow">
+        <div class="pane-header">
+          <span class="pane-label">Encaminhamento</span>
+          <div class="pane-actions">
+            <span class="pane-meta char-counter" id="outCharCount" style="display:none">0 caract</span>
+            <button class="icon-btn" id="copyBtn" onclick="copyOutput()" style="display:none" title="Copiar texto">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+            </button>
+            <button class="icon-btn" id="clearOutBtn" onclick="clearOutput()" style="display:none" title="Limpar saída">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="output-wrap" id="output" contenteditable="false"
+          data-placeholder="Veja a mágica acontecer ao clicar em Gerar!">
+          <span class="placeholder-text">Veja a mágica acontecer ao clicar em Gerar!</span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="bottom-bar">
+    <button class="btn btn-ghost" onclick="clearAll()">Limpar tudo</button>
+    <button class="btn btn-primary" id="formatBtn" onclick="format()">
+      <span class="spinner" id="spinner"></span>
+      <span id="btnLabel">Gerar</span>
+    </button>
+  </div>
+  <div class="status-pill" id="status"></div>
+
+</div>
+
+<script>
+const WORKER_URL = 'https://soapformatter.aogakid.workers.dev';
+
+const SYSTEM = `Você é um médico de família gerando um resumo clínico para encaminhamento a uma especialidade.
+
+Regras:
+- Output: um único parágrafo corrido, sem listas, sem markdown.
+- Incluir apenas informações relevantes para a especialidade solicitada.
+- Linguagem técnica, objetiva, norma culta do português.
+- A primeira linha deve ser "ENCAMINHAMENTO" e só na próxima iniciar o parágrafo.
+- Não inventar informações. Usar apenas o que está no prontuário.
+- A ordem do output deve ser o modelo.
+- Tamanho máximo: 10 linhas.
+
+Modelo de output:
+
+Paciente de [idade] anos, portador de [condições crônicas], com queixas de [sintomas relevantes]. [partes do exame físico/complementar relevantes]. Considerando [hipótese diagnóstica ou objetivo do encaminhamento], encaminho-o para avaliação especializada em [especialidade].`;
+
+let rawText = '';
+let statusTimeout;
+
+document.getElementById('input').addEventListener('input', function() {
+  const len = this.value.length;
+  const el = document.getElementById('charCount');
+  el.textContent = len.toLocaleString('pt-BR') + ' caract';
+  el.className = 'pane-meta char-counter' + (len > 4000 ? ' warn' : '');
+});
+
+function setStatus(msg, type = '', persistent = false) {
+  const el = document.getElementById('status');
+  clearTimeout(statusTimeout);
+  el.textContent = msg;
+  el.className = 'status-pill visible ' + type;
+  if (!persistent) {
+    statusTimeout = setTimeout(() => { el.className = 'status-pill'; }, 2200);
+  }
+}
+
+function setLoading(on) {
+  document.getElementById('formatBtn').disabled = on;
+  document.getElementById('spinner').style.display = on ? 'block' : 'none';
+  document.getElementById('btnLabel').textContent = on ? 'Gerando…' : 'Gerar';
+}
+
+async function format() {
+  const input = document.getElementById('input').value.trim();
+  const specialty = document.getElementById('specialty').value.trim();
+
+  if (!input) { setStatus('Cole o prontuário na entrada.', 'err'); return; }
+  if (!specialty) { setStatus('Informe a especialidade.', 'err'); document.getElementById('specialty').focus(); return; }
+
+  setLoading(true);
+  setStatus('Gerando…', 'busy', true);
+
+  const output = document.getElementById('output');
+  output.contentEditable = 'false';
+  output.className = 'output-wrap streaming';
+  output.textContent = '';
+  rawText = '';
+
+  const cursor = document.createElement('span');
+  cursor.className = 'cursor';
+  output.appendChild(cursor);
+
+  document.getElementById('copyBtn').style.display = 'none';
+  document.getElementById('clearOutBtn').style.display = 'none';
+  document.getElementById('outCharCount').style.display = 'none';
+
+  const userPrompt = `Especialidade de destino: ${specialty}\n\nProntuário:\n${input}`;
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: SYSTEM },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.2,
+        max_tokens: 1000,
+        stream: true
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || `HTTP ${res.status}`);
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const raw = line.slice(6).trim();
+        if (!raw || raw === '[DONE]') continue;
+        try {
+          const json = JSON.parse(raw);
+          const part = json.choices?.[0]?.delta?.content;
+          if (part) {
+            rawText += part;
+            output.textContent = rawText;
+            output.appendChild(cursor);
+            output.scrollTop = output.scrollHeight;
+          }
+        } catch {}
+      }
+    }
+
+    cursor.remove();
+    output.textContent = rawText;
+    output.className = 'output-wrap';
+    output.contentEditable = 'true';
+    document.getElementById('copyBtn').style.display = 'inline';
+    document.getElementById('clearOutBtn').style.display = 'inline';
+    document.getElementById('outCharCount').style.display = 'inline';
+    updateOutCounter();
+    setStatus('Pronto', 'ok');
+
+  } catch (err) {
+    cursor.remove();
+    output.className = 'output-wrap';
+    output.contentEditable = 'false';
+    output.innerHTML = `<span class="placeholder-text">Erro: ${err.message}</span>`;
+    setStatus('Erro na requisição.', 'err');
+  } finally {
+    setLoading(false);
+  }
+}
+
+function updateOutCounter() {
+  const len = rawText.length;
+  const el = document.getElementById('outCharCount');
+  el.textContent = len.toLocaleString('pt-BR') + ' caract';
+  el.className = 'pane-meta char-counter';
+}
+
+function copyOutput() {
+  navigator.clipboard.writeText(rawText).then(() => setStatus('Texto copiado', 'ok'));
+}
+
+function clearInput() {
+  document.getElementById('input').value = '';
+  document.getElementById('charCount').textContent = '0 caract';
+}
+
+function clearOutput() {
+  const output = document.getElementById('output');
+  output.contentEditable = 'false';
+  output.className = 'output-wrap';
+  output.innerHTML = '<span class="placeholder-text">O resumo para encaminhamento aparecerá aqui após clicar em Gerar.</span>';
+  document.getElementById('copyBtn').style.display = 'none';
+  document.getElementById('clearOutBtn').style.display = 'none';
+  document.getElementById('outCharCount').style.display = 'none';
+  rawText = '';
+}
+
+function clearAll() { clearInput(); clearOutput(); document.getElementById('specialty').value = ''; }
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') format();
+});
+</script>
+</body>
+</html>
